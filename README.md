@@ -1,5 +1,6 @@
+# MetaLogic2
 Reliable, accurate, small.<br>
-Organise your own strong logic system.
+Organise your own strong logic system.<br><br>
 
 
 Advanced Features
