@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# Install:
+# % cp /Applications/MetaLogic.app/Contents/Resources/metalogic /usr/local/bin
+# % chmod +x /usr/local/bin/metalogic
+#
+# Usage:
+# a. Refrence a file or folder from command line.
+#   % metalogic "record name" [file or folder]     # add a file or folder
+#   % metalogic "record name" .                    # add current folder
+#   % metalogic "record name" /full/path/of/[file|folder] #full path
+#   * a. record name: essential argument and MUST unique in database.
+#     b. add a refrence record, please set up meta fields on GUI later.
+#
+# b. Directly add a note with short text block.
+#   % metalogic -c "text block" "note name" # add a note with text string
+#   * a. note name: essential argument and MUST unique in database.
+#     b. add a note record, please set up meta fields on GUI later.
+#
+# c. Directly piping file content as a note.
+#   % cat commands.txt | metalogic -c - "note name"
+#   * a. note name: essential argument and MUST unique in database.
+#     b. add a note record, please set up meta fields on GUI later.
+#   when the note is not short enough, is not suitable directly input
+#   on command line.
+# **: please quote note name and text block.
+#
+
+
+export app=/Applications/MetaLogic.app/Contents/MacOS/metalogic
+if [ "$#" -lt 2 ]; then
+  echo "Usage:"
+  echo "% metalogic \"record name\" [file|folder]"
+  echo "% metalogic -c \"text block\" \"note name\""
+  echo "% cat commands.txt | metalogic -c - \"note name\""
+  echo "e.g, % metalogic -c \"shell command\" \"note name\""
+  echo "e.g, % cat commands.txt | metalogic -c - \"note name\""
+  exit 1
+fi
+
+
+# with input content
+if [[ "$1" = "-c" ]]; then
+   $app "$@"
+   exit 1
+fi
+
+
+# add path refrence
+if [ "$#" -eq 2 ]; then 
+  if [ -z "$1" ]; then
+      echo "Please input note name."
+      exit 1
+  fi
+  
+  p=""
+  if [[ "$2" = "." ]]; then #current folder
+      $app -c -f $(pwd) "$1"
+  else
+      if [[ "$1" =~ ^"/".* ]]; then
+          p="$2" #absolute path
+      else
+          p="$(pwd)/$2" #relative path
+      fi
+   fi
+    
+   if [[ -f "$p" ]] || [[ -d "$p" ]]; then
+        $app -c -f "$p" "$1"
+   else
+        if [[ -z "$p" ]] || [[ "$p"="-c" && $2="-" ]]; then
+            $app -c - "$2" #read the pipe, "note name" is the last argument
+        else
+            echo "$p does not exist."
+        fi
+   fi
+fi
+
+
+
+
